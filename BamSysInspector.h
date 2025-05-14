@@ -1,9 +1,11 @@
+#pragma once
 #include <windows.h>
 #include <iostream>
 #include <vector>
 #include <psapi.h>
 #include <io.h>
 #include <fcntl.h>
+#include <winnt.h>
 
 #ifndef NT_SUCCESS
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
@@ -73,6 +75,17 @@ typedef struct _SYSTEM_PROCESS_INFORMATION {
     LARGE_INTEGER OtherTransferCount;
     SYSTEM_THREAD_INFORMATION Threads[1];
 } SYSTEM_PROCESS_INFORMATION, * PSYSTEM_PROCESS_INFORMATION;
+
+typedef enum _SYSTEM_INFORMATION_CLASS {
+    SystemBasicInformation = 0,
+    SystemProcessorInformation = 1,
+    SystemPerformanceInformation = 2,
+    SystemTimeOfDayInformation = 3,
+    SystemBasicInformationEx = 4,
+    SystemProcessorPerformanceInformation = 5,
+    SystemHeapInformation = 6,
+    SystemCurrentTimeInformation = 7
+} SYSTEM_INFORMATION_CLASS; 
 
 extern "C" NTSTATUS NTAPI NtQuerySystemInformation(
     ULONG SystemInformationClass,
