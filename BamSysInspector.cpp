@@ -1,22 +1,5 @@
 #include "BamSysInspector.h"
 
-PVOID GetBamSysBaseAddress() {
-    LPVOID drivers[1024];
-    DWORD cbNeeded;
-
-    if (EnumDeviceDrivers(drivers, sizeof(drivers), &cbNeeded)) {
-        for (int i = 0; i < (cbNeeded / sizeof(LPVOID)); i++) {
-            WCHAR driverName[MAX_PATH];
-            if (GetDeviceDriverBaseNameW(drivers[i], driverName, MAX_PATH)) {
-                if (wcsstr(driverName, L"bam.sys")) {
-                    return drivers[i];
-                }
-            }
-        }
-    }
-    return nullptr;
-}
-
 void DisplaySystemBootTime() {
     ULONGLONG uptimeMs = GetTickCount64();
     FILETIME currentTime;
@@ -81,6 +64,23 @@ DWORD GetSystemProcessId() {
     return 4;
 }
 
+PVOID GetBamSysBaseAddress() {
+    LPVOID drivers[1024];
+    DWORD cbNeeded;
+
+    if (EnumDeviceDrivers(drivers, sizeof(drivers), &cbNeeded)) {
+        for (int i = 0; i < (cbNeeded / sizeof(LPVOID)); i++) {
+            WCHAR driverName[MAX_PATH];
+            if (GetDeviceDriverBaseNameW(drivers[i], driverName, MAX_PATH)) {
+                if (wcsstr(driverName, L"bam.sys")) {
+                    return drivers[i];
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
 bool FindBamSysThread() {
     PVOID bamBase = GetBamSysBaseAddress();
     if (!bamBase) {
@@ -113,7 +113,7 @@ bool FindBamSysThread() {
             for (ULONG i = 0; i < procInfo->NumberOfThreads; i++) {
                 SYSTEM_THREAD_INFORMATION& threadInfo = procInfo->Threads[i];
 
-                if (threadInfo.StartAddress >= bamBase && threadInfo.StartAddress < (PBYTE)bamBase + 0x900000) {
+                if (threadInfo.StartAddress >= bamBase && threadInfo.StartAddress < (PBYTE)bamBase + 0x9000000) {
                     std::wcout << L"\n[*] bam.sys thread found!\n";
                     std::wcout << L"Start Address: " << threadInfo.StartAddress << L"\n";
                     std::wcout << L"\n";
@@ -128,7 +128,6 @@ bool FindBamSysThread() {
 
                         std::wcout << L"Time after boot: " << diffFromBoot << L" seconds\n";
                         std::wcout << L"Thread alive since: " << threadAge << L" seconds\n";
-                        std::wcout << L"\n";
                     }
 
                     return true;
@@ -137,8 +136,7 @@ bool FindBamSysThread() {
         }
 
         if (!procInfo->NextEntryOffset) break;
-        procInfo = reinterpret_cast<PSYSTEM_PROCESS_INFORMATION>(
-            reinterpret_cast<BYTE*>(procInfo) + procInfo->NextEntryOffset);
+        procInfo = reinterpret_cast<PSYSTEM_PROCESS_INFORMATION>(reinterpret_cast<BYTE*>(procInfo) + procInfo->NextEntryOffset);
     }
 
     std::wcerr << L"[!] No bam.sys threads found\n";
