@@ -113,7 +113,7 @@ bool FindBamSysThread() {
             for (ULONG i = 0; i < procInfo->NumberOfThreads; i++) {
                 SYSTEM_THREAD_INFORMATION& threadInfo = procInfo->Threads[i];
 
-                if (threadInfo.StartAddress >= bamBase && threadInfo.StartAddress < (PBYTE)bamBase + 0x9000000) {
+                if (threadInfo.StartAddress >= bamBase && threadInfo.StartAddress < (PBYTE)bamBase + 0x100000) {
                     std::wcout << L"\n[*] bam.sys thread found!\n";
                     std::wcout << L"Start Address: " << threadInfo.StartAddress << L"\n";
                     std::wcout << L"\n";
